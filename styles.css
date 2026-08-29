@@ -30,6 +30,23 @@ body {
   min-height: 100vh;
 }
 
+.ghost-fibers {
+  height: 100vh;
+  left: 0;
+  opacity: 0.75;
+  pointer-events: none;
+  position: fixed;
+  top: 0;
+  width: 100vw;
+  z-index: 0;
+}
+
+.site-header,
+main {
+  position: relative;
+  z-index: 1;
+}
+
 a {
   color: var(--accent-strong);
   text-decoration-color: rgb(155 79 45 / 45%);
