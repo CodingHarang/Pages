@@ -25,9 +25,11 @@ body {
     radial-gradient(circle at 90% 10%, rgb(194 211 181 / 32%), transparent 23rem),
     var(--canvas);
   color: var(--ink);
+  isolation: isolate;
   line-height: 1.7;
   margin: 0;
   min-height: 100vh;
+  position: relative;
 }
 
 .ghost-fibers {
@@ -38,13 +40,7 @@ body {
   position: fixed;
   top: 0;
   width: 100vw;
-  z-index: 0;
-}
-
-.site-header,
-main {
-  position: relative;
-  z-index: 1;
+  z-index: -1;
 }
 
 a {
