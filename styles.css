@@ -1,0 +1,213 @@
+:root {
+  color-scheme: light dark;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background: #f6f8fa;
+  color: #1f2328;
+  line-height: 1.6;
+  margin: 0;
+}
+
+a {
+  color: #0969da;
+}
+
+a:hover,
+a:focus-visible {
+  color: #0550ae;
+}
+
+.container {
+  margin: 0 auto;
+  max-width: 46rem;
+  padding: 0 1.5rem;
+}
+
+.site-header {
+  background: #fff;
+  border-bottom: 1px solid #d0d7de;
+}
+
+.header-content {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  min-height: 4.5rem;
+}
+
+.site-name {
+  color: inherit;
+  font-size: 1.05rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.profile-link {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.intro {
+  border-bottom: 1px solid #d8dee4;
+  padding: clamp(2.5rem, 8vw, 5rem) 0 2rem;
+}
+
+.eyebrow {
+  color: #57606a;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin: 0 0 0.5rem;
+  text-transform: uppercase;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.25;
+}
+
+h1 {
+  font-size: clamp(2rem, 7vw, 3.25rem);
+  letter-spacing: -0.04em;
+  margin: 0;
+}
+
+.intro > p:last-child {
+  color: #57606a;
+  margin: 1.25rem 0 0;
+}
+
+.post-list {
+  display: grid;
+  gap: 1rem;
+  padding: 2rem 0;
+}
+
+.post-card,
+#post-detail,
+.not-found {
+  background: #fff;
+  border: 1px solid #d0d7de;
+  border-radius: 12px;
+  padding: clamp(1.25rem, 4vw, 2rem);
+}
+
+.post-card h3 {
+  font-size: 1.35rem;
+  margin: 0;
+}
+
+.post-title {
+  color: inherit;
+  text-decoration: none;
+}
+
+.post-title:hover,
+.post-title:focus-visible {
+  color: #0969da;
+  text-decoration: underline;
+}
+
+.post-date {
+  color: #57606a;
+  display: block;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+
+.post-excerpt {
+  margin: 1rem 0 0;
+}
+
+.article-layout {
+  padding-bottom: 3rem;
+  padding-top: 2rem;
+}
+
+.back-link {
+  display: inline-block;
+  font-weight: 600;
+  margin-bottom: 1.25rem;
+}
+
+#post-detail h1,
+.not-found h1 {
+  font-size: clamp(1.8rem, 6vw, 2.75rem);
+  margin: 0;
+}
+
+.post-content {
+  margin-top: 1.5rem;
+}
+
+.post-content p {
+  margin: 0 0 1rem;
+}
+
+.not-found p {
+  color: #57606a;
+}
+
+.sr-only {
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px;
+  clip: rect(0, 0, 0, 0);
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background: #0d1117;
+    color: #f0f6fc;
+  }
+
+  .site-header,
+  .post-card,
+  #post-detail,
+  .not-found {
+    background: #161b22;
+    border-color: #30363d;
+  }
+
+  .intro {
+    border-color: #30363d;
+  }
+
+  .eyebrow,
+  .intro > p:last-child,
+  .post-date,
+  .not-found p {
+    color: #8b949e;
+  }
+
+  a {
+    color: #58a6ff;
+  }
+
+  a:hover,
+  a:focus-visible,
+  .post-title:hover,
+  .post-title:focus-visible {
+    color: #79c0ff;
+  }
+}
+
+@media (max-width: 28rem) {
+  .container {
+    padding: 0 1rem;
+  }
+
+  .header-content {
+    gap: 1rem;
+  }
+}
