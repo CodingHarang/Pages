@@ -310,11 +310,29 @@ h1 {
   margin-bottom: 0;
 }
 
+.playground-page .container {
+  max-width: 88rem;
+}
+
+.playground-post {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+}
+
 .ghost-playground {
-  isolation: isolate;
   margin-top: 2rem;
+}
+
+.ghost-playground-stage {
+  aspect-ratio: 16 / 7;
+  background: #120f1a;
+  border: 1px solid #433a50;
+  border-radius: 1rem;
+  isolation: isolate;
+  min-height: 19rem;
   overflow: hidden;
-  padding: clamp(1.25rem, 4vw, 2rem);
   position: relative;
 }
 
@@ -324,31 +342,42 @@ h1 {
   pointer-events: none;
   position: absolute;
   width: 100%;
-  z-index: -1;
+  z-index: 0;
 }
 
-.ghost-playground h2,
-.playground-description,
-.ghost-playground-controls {
-  background: rgb(255 253 249 / 91%);
-  border: 1px solid rgb(228 217 204 / 88%);
-  border-radius: 0.75rem;
+.playground-preview-overlay {
+  align-items: flex-start;
+  background: linear-gradient(90deg, rgb(18 15 26 / 78%), transparent 62%);
+  color: #fffdf9;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: flex-end;
+  padding: clamp(1.5rem, 5vw, 3rem);
+  pointer-events: none;
+  position: relative;
+  z-index: 1;
 }
 
-.ghost-playground h2 {
-  font-size: clamp(1.4rem, 4vw, 1.9rem);
+.playground-preview-label {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
   margin: 0;
-  padding: 1.1rem 1.25rem 0.25rem;
+  text-transform: uppercase;
 }
 
-.playground-description {
-  color: var(--muted);
-  margin: 0;
-  padding: 0.4rem 1.25rem 1.15rem;
+.playground-preview-overlay p:last-child {
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  margin: 0.5rem 0 0;
 }
 
 .ghost-playground-controls {
-  margin: 1rem 0 0;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 1.25rem 0 0;
 }
 
 .ghost-playground-controls fieldset {
@@ -358,6 +387,8 @@ h1 {
   display: grid;
   gap: 1rem;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+  min-width: 0;
   padding: 1.25rem;
 }
 
@@ -437,7 +468,6 @@ h1 {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-size: 0.9rem;
   font-weight: 700;
-  grid-column: 1 / -1;
   justify-self: start;
   padding: 0.65rem 0.9rem;
 }
@@ -500,8 +530,6 @@ h1 {
     border-color: #906145;
   }
 
-  .ghost-playground h2,
-  .playground-description,
   .ghost-playground-controls fieldset {
     background: rgb(33 28 25 / 91%);
     border-color: rgb(74 64 56 / 88%);
@@ -531,6 +559,21 @@ h1 {
   }
 
   .ghost-playground-controls fieldset {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 48rem) {
+  .playground-page .container {
+    max-width: 49rem;
+  }
+
+  .ghost-playground-stage {
+    aspect-ratio: 16 / 9;
+    min-height: 16rem;
+  }
+
+  .ghost-playground-controls {
     grid-template-columns: 1fr;
   }
 }

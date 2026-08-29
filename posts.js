@@ -103,6 +103,8 @@ function renderPostDetail() {
   detail.append(title, date, content);
 
   if (post.playground) {
+    detail.classList.add("playground-post");
+    document.body.classList.add("playground-page");
     detail.append(createGhostFibersPlayground());
   }
 }
@@ -142,12 +144,12 @@ function createControl(control) {
 
 function createGhostFibersPlayground() {
   const section = createElement("section", "ghost-playground");
-  const heading = createElement("h2", null, "Ghost Fibers 설정");
-  const description = createElement("p", "playground-description", "설정을 조절해 배경의 움직임과 분위기를 살펴보세요.");
+  const stage = createElement("section", "ghost-playground-stage");
   const canvas = document.createElement("canvas");
+  const overlay = createElement("div", "playground-preview-overlay");
+  const previewLabel = createElement("p", "playground-preview-label", "실시간 미리보기");
+  const previewDescription = createElement("p", null, "설정을 변경하면 이 영역에 바로 반영됩니다.");
   const form = document.createElement("form");
-  const fieldset = document.createElement("fieldset");
-  const legend = createElement("legend", null, "배경 제어");
   const controls = [
     { name: "lineColor", label: "선 색상", type: "color", default: "#140E35" },
     { name: "glowColor", label: "광원 색상", type: "color", default: "#3437A0" },
@@ -177,18 +179,34 @@ function createGhostFibersPlayground() {
     { name: "fps", label: "프레임 레이트", type: "select", default: 60, options: [{ label: "24", value: 24 }, { label: "30", value: 30 }, { label: "45", value: 45 }, { label: "60", value: 60 }] },
     { name: "paused", label: "일시 정지", type: "checkbox", default: false }
   ];
+  const groups = [
+    { legend: "색상과 장면", names: ["lineColor", "glowColor", "brightness", "blueBoost", "vignette", "grain", "lightMode"] },
+    { legend: "움직임", names: ["speed", "scale", "rotation", "rotationSpeed", "layers"] },
+    { legend: "파동과 비틀기", names: ["waveAmplitude", "waveFrequency", "waveSpeed", "layerSpeed", "twist", "twistFrequency", "twistSpeed"] },
+    { legend: "선과 광원", names: ["lineFrequency", "lineSpacing", "lineSharpness", "glowFalloff", "glowIntensity"] },
+    { legend: "렌더링", names: ["dpr", "fps", "paused"] }
+  ];
   const reset = createElement("button", "playground-reset", "기본값으로 재설정");
 
   canvas.className = "ghost-fibers-playground-canvas";
   canvas.dataset.ghostFibersPlayground = "";
   canvas.setAttribute("aria-hidden", "true");
+  overlay.append(previewLabel, previewDescription);
+  stage.append(canvas, overlay);
   form.className = "ghost-playground-controls";
-  fieldset.append(legend);
-  controls.forEach((control) => fieldset.append(createControl(control)));
+  groups.forEach((group) => {
+    const fieldset = document.createElement("fieldset");
+    const legend = createElement("legend", null, group.legend);
+
+    fieldset.append(legend);
+    group.names.forEach((name) => {
+      fieldset.append(createControl(controls.find((control) => control.name === name)));
+    });
+    form.append(fieldset);
+  });
   reset.type = "reset";
-  fieldset.append(reset);
-  form.append(fieldset);
-  section.append(canvas, heading, description, form);
+  form.append(reset);
+  section.append(stage, form);
   return section;
 }
 

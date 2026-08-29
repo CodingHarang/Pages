@@ -200,7 +200,7 @@ function updateControlValue(input) {
 
 document.querySelectorAll(".ghost-fibers, [data-ghost-fibers-playground]").forEach((canvas) => {
   const renderer = new GhostFibers(canvas);
-  const form = canvas.parentElement.querySelector(".ghost-playground-controls");
+  const form = canvas.closest(".ghost-playground")?.querySelector(".ghost-playground-controls");
 
   if (form) {
     form.querySelectorAll("input, select").forEach((input) => {
