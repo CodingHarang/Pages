@@ -1,234 +1,403 @@
+/*
+ * GhostFibers WebGL shader port
+ * Derived from DavidHDev/react-bits GhostFibers (MIT License).
+ *
+ * Copyright (c) DavidHDev
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions: The above copyright
+ * notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software. THE SOFTWARE IS PROVIDED "AS IS",
+ * WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED.
+ */
+
 const defaultOptions = {
-  lineColor: "#140E35",
-  glowColor: "#3437A0",
-  speed: 0.2,
-  scale: 2,
-  rotation: 0,
-  rotationSpeed: 0.25,
-  layers: 4,
-  waveAmplitude: 0.015,
-  waveFrequency: 3,
-  waveSpeed: 0.15,
-  layerSpeed: 0.08,
-  twist: 0.1,
-  twistFrequency: 5,
-  twistSpeed: 1.2,
-  lineFrequency: 5,
-  lineSpacing: 2,
-  lineSharpness: 16,
-  glowFalloff: 10,
-  glowIntensity: 1.6,
-  brightness: 2,
-  blueBoost: 1.25,
-  vignette: 0.8,
-  grain: 0.05,
-  lightMode: false,
-  dpr: 1,
-  fps: 60,
-  paused: false
+  lineColor: "#140E35", glowColor: "#3437A0", speed: 0.2, scale: 2, rotation: 0,
+  rotationSpeed: 0.25, layers: 4, waveAmplitude: 0.015, waveFrequency: 3,
+  waveSpeed: 0.15, layerSpeed: 0.08, twist: 0.1, twistFrequency: 5,
+  twistSpeed: 1.2, lineFrequency: 5, lineSpacing: 2, lineSharpness: 16,
+  glowFalloff: 10, glowIntensity: 1.6, brightness: 2, blueBoost: 1.25,
+  vignette: 0.8, grain: 0.05, lightMode: false, dpr: 1, fps: 60, paused: false
 };
+
+const vertexShader = `#version 300 es
+in vec2 position;
+void main() {
+  gl_Position = vec4(position, 0.0, 1.0);
+}`;
+
+const fragmentShader = `#version 300 es
+precision highp float;
+uniform vec2 uResolution;
+uniform float uTime;
+uniform float uSpeed;
+uniform float uScale;
+uniform float uRotation;
+uniform float uLayers;
+uniform float uWaveAmplitude;
+uniform float uWaveFrequency;
+uniform float uWaveSpeed;
+uniform float uLayerSpeed;
+uniform float uTwist;
+uniform float uTwistFrequency;
+uniform float uTwistSpeed;
+uniform float uLineFrequency;
+uniform float uLineSpacing;
+uniform float uLineSharpness;
+uniform float uGlowFalloff;
+uniform float uGlowIntensity;
+uniform float uBrightness;
+uniform float uBlueBoost;
+uniform float uVignette;
+uniform float uGrain;
+uniform float uRotationSpeed;
+uniform float uLightMode;
+uniform vec3 uLineColor;
+uniform vec3 uGlowColor;
+out vec4 fragColor;
+#define MAX_LAYERS 10
+mat2 rotate2d(float angle) {
+  float sine = sin(angle);
+  float cosine = cos(angle);
+  return mat2(cosine, -sine, sine, cosine);
+}
+float grainHash(vec2 point) {
+  point = floor(point);
+  float hash = 52.9829189 * fract(dot(point, vec2(0.065, 0.005)));
+  return fract(hash);
+}
+float layeredGrain(vec2 fragmentPixel) {
+  vec2 point = mod(fragmentPixel + vec2(uTime * 30.0, -uTime * 21.0), 1024.0);
+  vec2 rotated = mat2(0.8, -0.5, 0.5, 0.8) * point;
+  float grain = 0.0;
+  grain += 0.40 * grainHash(rotated);
+  grain += 0.25 * grainHash(rotated * 2.0 + 17.0);
+  grain += 0.20 * grainHash(rotated * 4.0 + 47.0);
+  grain += 0.10 * grainHash(rotated * 8.0 + 113.0);
+  grain += 0.05 * grainHash(rotated * 16.0 + 191.0);
+  return grain;
+}
+void main() {
+  vec2 resolution = max(uResolution, vec2(1.0));
+  vec2 uv = (2.0 * gl_FragCoord.xy - resolution) / resolution.y;
+  float time = uTime * uSpeed;
+  vec3 backdrop = mix(vec3(0.070588, 0.058824, 0.090196), vec3(1.0), step(0.5, uLightMode));
+  vec3 centerTone = max(uLineColor * 0.85567 - uGlowColor * 0.06186, vec3(0.0));
+  vec3 cloudTone = uLineColor * 0.19588 + uGlowColor * 0.2268;
+  vec2 p = uv;
+  p /= max(uScale, 0.05);
+  p = rotate2d(radians(uRotation) + time * uRotationSpeed) * p;
+  vec3 color = vec3(0.0);
+  float fiberField = 0.0;
+  for (int index = 0; index < MAX_LAYERS; index++) {
+    float fi = float(index) + 1.0;
+    if (fi > uLayers) break;
+    p += uWaveAmplitude * sin(p.yx * fi * uWaveFrequency + time * (uWaveSpeed + fi * uLayerSpeed));
+    float radius = length(p);
+    float polarAngle = atan(p.y, p.x);
+    polarAngle += sin(radius * uTwistFrequency - time * uTwistSpeed + fi) * uTwist;
+    p = vec2(cos(polarAngle), sin(polarAngle)) * radius;
+    float lines = abs(sin(p.x * (uLineFrequency + fi * uLineSpacing) + sin(p.y * 3.0 + time)));
+    lines = pow(max(0.0, 1.0 - lines), uLineSharpness);
+    fiberField += lines / fi;
+    color += uLineColor * lines / fi;
+    float glow = exp(-uGlowFalloff * abs(sin(p.x * 3.0 + time + fi)));
+    color += uGlowColor * glow * uGlowIntensity / (fi * 2.0);
+  }
+  float center = exp(-2.2 * dot(uv, uv));
+  color += centerTone * center;
+  float cloud = exp(-1.5 * length(uv + vec2(sin(time * 0.3) * 0.25, cos(time * 0.25) * 0.18)));
+  color += cloudTone * cloud;
+  float vignette = 1.0 - smoothstep(0.35, 1.45, length(uv));
+  color *= mix(1.0 - uVignette, 1.0, vignette);
+  color = 1.0 - exp(-color * uBrightness);
+  color.b *= uBlueBoost;
+  vec3 outputColor;
+  if (uLightMode > 0.5) {
+    float edgeFade = mix(1.0 - uVignette, 1.0, vignette);
+    float fibers = pow(smoothstep(0.12, 1.05, fiberField) * edgeFade, 1.5);
+    float atmosphere = (center * 0.025 + cloud * 0.015) * edgeFade;
+    vec3 fiberInk = mix(backdrop, uLineColor, 0.52);
+    vec3 airColor = mix(backdrop, uGlowColor, 0.16);
+    outputColor = mix(backdrop, airColor, atmosphere);
+    outputColor = mix(outputColor, fiberInk, fibers * 0.3);
+  } else {
+    outputColor = backdrop + color;
+  }
+  float noise = (layeredGrain(gl_FragCoord.xy) - 0.5) * uGrain;
+  outputColor = clamp(outputColor + noise, 0.0, 1.0);
+  fragColor = vec4(outputColor, 1.0);
+}`;
 
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
 function hexToRgb(hex) {
-  const value = hex.replace("#", "");
-  return {
-    red: Number.parseInt(value.slice(0, 2), 16),
-    green: Number.parseInt(value.slice(2, 4), 16),
-    blue: Number.parseInt(value.slice(4, 6), 16)
-  };
+  const value = hex.trim().replace(/^#/, "");
+  const normalized = value.length === 3 ? value.replace(/./g, (channel) => channel + channel) : value;
+  const match = /^([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(normalized);
+  return match ? [Number.parseInt(match[1], 16) / 255, Number.parseInt(match[2], 16) / 255, Number.parseInt(match[3], 16) / 255] : [1, 1, 1];
 }
 
-function colorWithBrightness(hex, alpha, brightness, blueBoost) {
-  const color = hexToRgb(hex);
-  return `rgb(${Math.min(255, color.red * brightness)} ${Math.min(255, color.green * brightness)} ${Math.min(255, color.blue * brightness * blueBoost)} / ${alpha})`;
+function compileShader(gl, type, source) {
+  const shader = gl.createShader(type);
+  gl.shaderSource(shader, source);
+  gl.compileShader(shader);
+  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+    const message = gl.getShaderInfoLog(shader);
+    gl.deleteShader(shader);
+    throw new Error(message);
+  }
+  return shader;
 }
 
-class GhostFibers {
-  constructor(canvas, options = {}) {
+class PlaygroundRenderer {
+  constructor(canvas) {
     this.canvas = canvas;
-    this.context = canvas.getContext("2d");
-    this.options = { ...defaultOptions, ...options };
-    this.animationFrame = 0;
-    this.lastFrame = 0;
-    this.width = 0;
-    this.height = 0;
+    this.options = { ...defaultOptions };
+    this.frameId = 0;
+    this.elapsed = 0;
+    this.previousTime = performance.now();
+    this.lastRenderTime = 0;
+    this.isVisible = true;
+    this.isPageVisible = !document.hidden;
+    this.gl = canvas.getContext("webgl2", { alpha: false, antialias: false });
+    if (!this.gl) throw new Error("WebGL2 unavailable");
+
+    this.program = this.createProgram();
+    this.uniforms = Object.fromEntries([
+      "Resolution", "Time", "Speed", "Scale", "Rotation", "RotationSpeed", "Layers",
+      "WaveAmplitude", "WaveFrequency", "WaveSpeed", "LayerSpeed", "Twist",
+      "TwistFrequency", "TwistSpeed", "LineFrequency", "LineSpacing", "LineSharpness",
+      "GlowFalloff", "GlowIntensity", "Brightness", "BlueBoost", "Vignette", "Grain",
+      "LightMode", "LineColor", "GlowColor"
+    ].map((name) => [name, this.gl.getUniformLocation(this.program, `u${name}`)]));
+    this.createTriangle();
     this.resizeObserver = new ResizeObserver(() => this.resize());
-    this.resizeObserver.observe(canvas.parentElement || canvas);
+    this.resizeObserver.observe(canvas.parentElement);
+    this.intersectionObserver = new IntersectionObserver(([entry]) => {
+      this.isVisible = entry.isIntersecting;
+      this.updateAnimation();
+    }, { threshold: 0 });
+    this.intersectionObserver.observe(canvas);
     this.resize();
+    this.setOptions(defaultOptions);
   }
 
-  resize() {
-    const rect = this.canvas.getBoundingClientRect();
-    const pixelRatio = Math.min((window.devicePixelRatio || 1) * this.options.dpr, 2);
+  createProgram() {
+    const gl = this.gl;
+    const program = gl.createProgram();
+    const vertex = compileShader(gl, gl.VERTEX_SHADER, vertexShader);
+    const fragment = compileShader(gl, gl.FRAGMENT_SHADER, fragmentShader);
+    gl.attachShader(program, vertex);
+    gl.attachShader(program, fragment);
+    gl.linkProgram(program);
+    gl.deleteShader(vertex);
+    gl.deleteShader(fragment);
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(program));
+    return program;
+  }
 
-    this.width = Math.max(1, rect.width);
-    this.height = Math.max(1, rect.height);
-    this.canvas.width = Math.floor(this.width * pixelRatio);
-    this.canvas.height = Math.floor(this.height * pixelRatio);
-    this.context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
-    this.draw(performance.now());
+  createTriangle() {
+    const gl = this.gl;
+    this.buffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+    const position = gl.getAttribLocation(this.program, "position");
+    gl.useProgram(this.program);
+    gl.enableVertexAttribArray(position);
+    gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
   }
 
   setOptions(options) {
-    this.options = { ...this.options, ...options };
+    this.options = { ...this.options, ...options, layers: Math.min(Math.max(Math.round(options.layers ?? this.options.layers), 1), 10), dpr: Math.min(Math.max(options.dpr ?? this.options.dpr, 0.5), 2), fps: Math.min(Math.max(options.fps ?? this.options.fps, 1), 120) };
+    const gl = this.gl;
+    const uniform = this.uniforms;
+    gl.useProgram(this.program);
+    gl.uniform1f(uniform.Speed, this.options.speed);
+    gl.uniform1f(uniform.Scale, this.options.scale);
+    gl.uniform1f(uniform.Rotation, this.options.rotation);
+    gl.uniform1f(uniform.RotationSpeed, this.options.rotationSpeed);
+    gl.uniform1f(uniform.Layers, this.options.layers);
+    gl.uniform1f(uniform.WaveAmplitude, this.options.waveAmplitude);
+    gl.uniform1f(uniform.WaveFrequency, this.options.waveFrequency);
+    gl.uniform1f(uniform.WaveSpeed, this.options.waveSpeed);
+    gl.uniform1f(uniform.LayerSpeed, this.options.layerSpeed);
+    gl.uniform1f(uniform.Twist, this.options.twist);
+    gl.uniform1f(uniform.TwistFrequency, this.options.twistFrequency);
+    gl.uniform1f(uniform.TwistSpeed, this.options.twistSpeed);
+    gl.uniform1f(uniform.LineFrequency, this.options.lineFrequency);
+    gl.uniform1f(uniform.LineSpacing, this.options.lineSpacing);
+    gl.uniform1f(uniform.LineSharpness, this.options.lineSharpness);
+    gl.uniform1f(uniform.GlowFalloff, this.options.glowFalloff);
+    gl.uniform1f(uniform.GlowIntensity, this.options.glowIntensity);
+    gl.uniform1f(uniform.Brightness, this.options.brightness);
+    gl.uniform1f(uniform.BlueBoost, this.options.blueBoost);
+    gl.uniform1f(uniform.Vignette, this.options.vignette);
+    gl.uniform1f(uniform.Grain, this.options.grain);
+    gl.uniform1f(uniform.LightMode, this.options.lightMode ? 1 : 0);
+    gl.uniform3fv(uniform.LineColor, hexToRgb(this.options.lineColor));
+    gl.uniform3fv(uniform.GlowColor, hexToRgb(this.options.glowColor));
     this.resize();
     this.updateAnimation();
   }
 
-  draw(time = 0) {
-    const { context, width, height, options } = this;
-    const centerX = width / 2;
-    const centerY = height / 2;
-    const scale = options.scale;
-    const angle = ((options.rotation + time * 0.001 * options.rotationSpeed * 60) * Math.PI) / 180;
-    const layerCount = Math.round(options.layers);
-
-    context.clearRect(0, 0, width, height);
-
-    if (this.canvas.dataset.ghostFibersPlayground !== undefined) {
-      context.fillStyle = options.lightMode ? "#fff" : "#120f1a";
-      context.fillRect(0, 0, width, height);
-    }
-
-    context.save();
-    context.translate(centerX, centerY);
-    context.rotate(angle);
-    context.translate(-centerX, -centerY);
-    context.globalCompositeOperation = "screen";
-    context.shadowBlur = options.glowIntensity * 12;
-    context.shadowColor = colorWithBrightness(options.glowColor, 0.4, options.brightness, options.blueBoost);
-
-    for (let layer = 0; layer < layerCount; layer += 1) {
-      const fraction = layer / Math.max(1, layerCount - 1);
-      const startY = height * (0.14 + fraction * 0.72);
-      const phase = time * 0.001 * options.speed;
-      const gradient = context.createLinearGradient(0, startY, width, startY);
-      const alpha = (0.07 + options.glowIntensity * 0.04) * (1 - layer / (layerCount + 2));
-
-      gradient.addColorStop(0, colorWithBrightness(options.lineColor, 0, options.brightness, options.blueBoost));
-      gradient.addColorStop(0.4, colorWithBrightness(options.lineColor, alpha, options.brightness, options.blueBoost));
-      gradient.addColorStop(0.65, colorWithBrightness(options.glowColor, alpha, options.brightness, options.blueBoost));
-      gradient.addColorStop(1, colorWithBrightness(options.glowColor, 0, options.brightness, options.blueBoost));
-
-      context.strokeStyle = gradient;
-      context.lineWidth = Math.max(0.35, 17 - options.lineSharpness);
-      context.beginPath();
-
-      for (let x = -40; x <= width + 40; x += 10) {
-        const normalizedX = (x - centerX) / Math.max(width, 1);
-        const wave = Math.sin(normalizedX * options.waveFrequency * 12 + phase * options.waveSpeed + layer) * options.waveAmplitude * height * 2;
-        const twist = Math.sin(normalizedX * options.twistFrequency * 10 + phase * options.twistSpeed + layer) * options.twist * height * 0.28;
-        const line = Math.sin(normalizedX * options.lineFrequency * 16 + layer * options.lineSpacing) * height * 0.035;
-        const y = startY + (wave + twist + line) / scale;
-
-        if (x === -40) {
-          context.moveTo(x, y);
-        } else {
-          context.lineTo(x, y);
-        }
-      }
-
-      context.stroke();
-    }
-
-    context.restore();
-    this.drawVignette();
-    this.drawGrain(time);
+  resize() {
+    const rect = this.canvas.getBoundingClientRect();
+    const dpr = Math.min(Math.max(this.options.dpr, 0.5), 2);
+    this.canvas.width = Math.max(1, Math.floor(rect.width * dpr));
+    this.canvas.height = Math.max(1, Math.floor(rect.height * dpr));
+    this.gl.viewport(0, 0, this.gl.drawingBufferWidth, this.gl.drawingBufferHeight);
+    this.gl.useProgram(this.program);
+    this.gl.uniform2f(this.uniforms.Resolution, this.gl.drawingBufferWidth, this.gl.drawingBufferHeight);
+    this.render();
   }
 
-  drawVignette() {
-    const { context, width, height, options } = this;
-    const vignette = context.createRadialGradient(width / 2, height / 2, Math.min(width, height) * 0.15, width / 2, height / 2, Math.max(width, height) * 0.75);
-
-    vignette.addColorStop(0, "rgb(0 0 0 / 0)");
-    vignette.addColorStop(1, `rgb(0 0 0 / ${options.vignette * 0.45})`);
-    context.fillStyle = vignette;
-    context.fillRect(0, 0, width, height);
+  render() {
+    this.gl.useProgram(this.program);
+    this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
   }
 
-  drawGrain(time) {
-    const { context, width, height, options } = this;
-    const density = Math.floor(options.grain * 500);
-
-    context.fillStyle = options.lightMode ? "rgb(0 0 0 / 8%)" : "rgb(255 255 255 / 8%)";
-    for (let index = 0; index < density; index += 1) {
-      const x = (index * 137.5 + time * 0.03) % width;
-      const y = (index * 83.7 + time * 0.02) % height;
-      context.fillRect(x, y, 1, 1);
-    }
+  canAnimate() {
+    return this.isVisible && this.isPageVisible && !this.options.paused && !reducedMotion.matches;
   }
 
-  animate = (time) => {
-    const frameInterval = 1000 / this.options.fps;
-
-    if (time - this.lastFrame >= frameInterval) {
-      this.draw(time);
-      this.lastFrame = time;
+  loop = (now) => {
+    this.frameId = 0;
+    if (!this.canAnimate()) return;
+    const delta = Math.min((now - this.previousTime) / 1000, 0.1);
+    this.previousTime = now;
+    this.elapsed += delta;
+    if (now - this.lastRenderTime >= 1000 / this.options.fps - 0.5) {
+      this.gl.uniform1f(this.uniforms.Time, this.elapsed);
+      this.render();
+      this.lastRenderTime = now;
     }
-    this.animationFrame = window.requestAnimationFrame(this.animate);
+    this.frameId = requestAnimationFrame(this.loop);
   };
 
   updateAnimation() {
-    window.cancelAnimationFrame(this.animationFrame);
-    this.draw(performance.now());
-
-    if (!reducedMotion.matches && !document.hidden && !this.options.paused) {
-      this.lastFrame = performance.now();
-      this.animationFrame = window.requestAnimationFrame(this.animate);
+    cancelAnimationFrame(this.frameId);
+    this.frameId = 0;
+    this.render();
+    if (this.canAnimate()) {
+      this.previousTime = performance.now();
+      this.frameId = requestAnimationFrame(this.loop);
     }
+  }
+
+  setPageVisibility() {
+    this.isPageVisible = !document.hidden;
+    this.updateAnimation();
+  }
+
+  destroy() {
+    cancelAnimationFrame(this.frameId);
+    this.resizeObserver.disconnect();
+    this.intersectionObserver.disconnect();
+    this.gl.deleteBuffer(this.buffer);
+    this.gl.deleteProgram(this.program);
+    this.gl.getExtension("WEBGL_lose_context")?.loseContext();
   }
 }
 
+function renderSiteBackground(canvas) {
+  const context = canvas.getContext("2d");
+  let frameId = 0;
+  let width = 0;
+  let height = 0;
+  const resize = () => {
+    const ratio = Math.min(window.devicePixelRatio || 1, 2);
+    width = window.innerWidth;
+    height = window.innerHeight;
+    canvas.width = Math.floor(width * ratio);
+    canvas.height = Math.floor(height * ratio);
+    context.setTransform(ratio, 0, 0, ratio, 0, 0);
+  };
+  const draw = (time = 0) => {
+    context.clearRect(0, 0, width, height);
+    context.lineWidth = 1;
+    for (let fiber = 0; fiber < 16; fiber += 1) {
+      const offset = fiber * 0.52;
+      const startY = height * (0.08 + fiber * 0.06);
+      const gradient = context.createLinearGradient(0, startY, width, startY);
+      gradient.addColorStop(0, "rgb(194 122 77 / 0)");
+      gradient.addColorStop(0.42, "rgb(194 122 77 / 22%)");
+      gradient.addColorStop(0.65, "rgb(121 144 113 / 18%)");
+      gradient.addColorStop(1, "rgb(121 144 113 / 0)");
+      context.strokeStyle = gradient;
+      context.beginPath();
+      for (let x = -40; x <= width + 40; x += 12) {
+        const y = startY + Math.sin(x * 0.009 + time * 0.00035 + offset) * 22 + Math.sin(x * 0.021 - time * 0.00055 + offset * 2) * 9;
+        x === -40 ? context.moveTo(x, y) : context.lineTo(x, y);
+      }
+      context.stroke();
+    }
+  };
+  const animate = (time) => {
+    draw(time);
+    frameId = requestAnimationFrame(animate);
+  };
+  const update = () => {
+    cancelAnimationFrame(frameId);
+    resize();
+    draw();
+    if (!reducedMotion.matches && !document.hidden) frameId = requestAnimationFrame(animate);
+  };
+  update();
+  window.addEventListener("resize", update);
+  reducedMotion.addEventListener("change", update);
+  document.addEventListener("visibilitychange", update);
+}
+
 function readFormOptions(form) {
-  return Object.fromEntries(
-    Object.entries(defaultOptions).map(([name, defaultValue]) => {
-      const input = form.elements.namedItem(name);
-      const value = input.type === "checkbox" ? input.checked : input.value;
-      return [name, typeof defaultValue === "number" ? Number(value) : value];
-    })
-  );
+  return Object.fromEntries(Object.entries(defaultOptions).map(([name, defaultValue]) => {
+    const input = form.elements.namedItem(name);
+    return [name, typeof defaultValue === "number" ? Number(input.value) : input.type === "checkbox" ? input.checked : input.value];
+  }));
 }
 
 function updateControlValue(input) {
   const output = input.parentElement.querySelector("output");
-  if (output) {
-    output.value = input.type === "checkbox" ? String(input.checked) : input.value;
-    output.textContent = output.value;
-  }
+  if (output) output.textContent = input.type === "checkbox" ? String(input.checked) : input.value;
 }
 
-document.querySelectorAll(".ghost-fibers, [data-ghost-fibers-playground]").forEach((canvas) => {
-  const renderer = new GhostFibers(canvas);
-  const form = canvas.closest(".ghost-playground")?.querySelector(".ghost-playground-controls");
-
-  if (form) {
-    form.querySelectorAll("input, select").forEach((input) => {
-      const output = document.createElement("output");
-      input.parentElement.append(output);
+document.querySelectorAll(".ghost-fibers").forEach(renderSiteBackground);
+document.querySelectorAll("[data-ghost-fibers-playground]").forEach((canvas) => {
+  const form = canvas.closest(".ghost-playground").querySelector(".ghost-playground-controls");
+  let renderer;
+  try {
+    renderer = new PlaygroundRenderer(canvas);
+  } catch {
+    canvas.hidden = true;
+    const message = document.createElement("p");
+    message.className = "playground-render-error";
+    message.textContent = "이 브라우저에서는 WebGL 2를 지원하지 않아 Ghost Fibers 미리보기를 표시할 수 없습니다.";
+    canvas.parentElement.append(message);
+    return;
+  }
+  form.querySelectorAll("input, select").forEach((input) => {
+    const output = document.createElement("output");
+    input.parentElement.append(output);
+    updateControlValue(input);
+  });
+  form.addEventListener("input", (event) => {
+    updateControlValue(event.target);
+    renderer.setOptions(readFormOptions(form));
+  });
+  form.addEventListener("reset", (event) => {
+    event.preventDefault();
+    Object.entries(defaultOptions).forEach(([name, value]) => {
+      const input = form.elements.namedItem(name);
+      input.type === "checkbox" ? input.checked = value : input.value = value;
       updateControlValue(input);
     });
-    form.addEventListener("input", (event) => {
-      updateControlValue(event.target);
-      renderer.setOptions(readFormOptions(form));
-    });
-    form.addEventListener("reset", (event) => {
-      event.preventDefault();
-      Object.entries(defaultOptions).forEach(([name, value]) => {
-        const input = form.elements.namedItem(name);
-        if (input.type === "checkbox") {
-          input.checked = value;
-        } else {
-          input.value = value;
-        }
-        updateControlValue(input);
-      });
-      renderer.setOptions(defaultOptions);
-    });
-  }
-
+    renderer.setOptions(defaultOptions);
+  });
   renderer.updateAnimation();
-  window.addEventListener("resize", () => renderer.resize());
+  document.addEventListener("visibilitychange", () => renderer.setPageVisibility());
   reducedMotion.addEventListener("change", () => renderer.updateAnimation());
-  document.addEventListener("visibilitychange", () => renderer.updateAnimation());
+  window.addEventListener("pagehide", () => renderer.destroy(), { once: true });
 });
