@@ -1,13 +1,88 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Hello World</title>
+    <meta name="description" content="CodingHarang의 GitHub 프로필 소개">
+    <title>CodingHarang | GitHub 프로필</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      body {
+        align-items: center;
+        background: #f6f8fa;
+        color: #1f2328;
+        display: flex;
+        justify-content: center;
+        margin: 0;
+        min-height: 100vh;
+        padding: 1.5rem;
+      }
+
+      main {
+        background: #fff;
+        border: 1px solid #d0d7de;
+        border-radius: 16px;
+        box-shadow: 0 8px 24px rgb(140 149 159 / 20%);
+        max-width: 40rem;
+        padding: clamp(2rem, 7vw, 4rem);
+        text-align: center;
+        width: 100%;
+      }
+
+      h1 {
+        font-size: clamp(2rem, 7vw, 3.5rem);
+        letter-spacing: -0.04em;
+        margin: 0;
+      }
+
+      p {
+        color: #57606a;
+        font-size: 1.1rem;
+        line-height: 1.7;
+        margin: 1.5rem 0 0;
+      }
+
+      a {
+        color: #0969da;
+        font-weight: 700;
+      }
+
+      a:hover,
+      a:focus-visible {
+        color: #0550ae;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        body {
+          background: #0d1117;
+          color: #f0f6fc;
+        }
+
+        main {
+          background: #161b22;
+          border-color: #30363d;
+          box-shadow: none;
+        }
+
+        p {
+          color: #8b949e;
+        }
+
+        a {
+          color: #58a6ff;
+        }
+      }
+    </style>
   </head>
   <body>
     <main>
-      <h1>Hello World</h1>
+      <p>GitHub 프로필 소개</p>
+      <h1>CodingHarang</h1>
+      <p>저장소와 활동은 <a href="https://github.com/CodingHarang">github.com/CodingHarang</a>에서 확인해 보세요.</p>
     </main>
   </body>
 </html>
