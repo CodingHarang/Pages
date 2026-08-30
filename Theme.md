@@ -47,6 +47,13 @@
 - 효과 레이어는 `pointer-events: none`이어야 하며, 카드 링크와 탐색 동작을 방해하지 않는다.
 - `prefers-reduced-motion`에서는 추적과 시각 효과를 비활성화한다.
 
+## 참고 사이트
+
+- Ghost Fibers의 시각·동작 참고: [Ghost Fibers](https://reactbits.dev/backgrounds/ghost-fibers)
+- 게시글 카드 스포트라이트의 시각·동작 참고: [Spotlight Card](https://reactbits.dev/components/spotlight-card)
+- 다크 사이버펑크 네온 방향은 외부 참고가 아닌 이 프로젝트의 디자인 방향이다.
+- 참고 링크는 시각과 동작의 의도를 위한 것이며, 상위 프로젝트의 브랜딩, 페이지 레이아웃, 에셋 또는 소스 코드를 복사하라는 지침이 아니다.
+
 ## 접근성 및 성능
 
 - 의미 있는 HTML 구조와 연결된 레이블을 사용하고, 장식용 캔버스는 보조 기술에서 숨긴다.
