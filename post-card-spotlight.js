@@ -15,10 +15,6 @@ function enableSpotlights() {
       }
     }, { signal: controller.signal });
 
-    card.addEventListener("pointerleave", () => {
-      card.style.removeProperty("--spotlight-x");
-      card.style.removeProperty("--spotlight-y");
-    }, { signal: controller.signal });
   });
 }
 
