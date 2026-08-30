@@ -357,10 +357,6 @@ h1 {
   margin-top: 0;
 }
 
-.post-excerpt {
-  margin: 1rem 0 0;
-}
-
 .article-layout {
   padding-bottom: 5rem;
   padding-top: clamp(2rem, 5vw, 3.5rem);

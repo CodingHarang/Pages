@@ -68,12 +68,11 @@ function renderPostList() {
     const card = createElement("a", "post-card");
     const heading = createElement("h3");
     const date = createElement("time", "post-date", formatDate(post.date));
-    const excerpt = createElement("p", "post-excerpt", post.excerpt);
 
     card.href = `post.html?id=${encodeURIComponent(post.id)}`;
     date.dateTime = post.date;
     heading.textContent = post.title;
-    card.append(date, heading, excerpt);
+    card.append(date, heading);
     postList.append(card);
   });
 }
