@@ -65,17 +65,16 @@ function renderPostList() {
   const postList = document.querySelector("#post-list");
 
   posts.forEach((post) => {
-    const article = createElement("article", "post-card");
+    const card = createElement("a", "post-card");
     const heading = createElement("h3");
-    const link = createElement("a", "post-title", post.title);
     const date = createElement("time", "post-date", formatDate(post.date));
     const excerpt = createElement("p", "post-excerpt", post.excerpt);
 
-    link.href = `post.html?id=${encodeURIComponent(post.id)}`;
+    card.href = `post.html?id=${encodeURIComponent(post.id)}`;
     date.dateTime = post.date;
-    heading.append(link);
-    article.append(heading, date, excerpt);
-    postList.append(article);
+    heading.textContent = post.title;
+    card.append(date, heading, excerpt);
+    postList.append(card);
   });
 }
 
