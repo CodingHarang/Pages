@@ -44,6 +44,18 @@ body {
   z-index: -1;
 }
 
+.site-render-error {
+  bottom: 0.75rem;
+  color: var(--muted);
+  font-family: system-ui, sans-serif;
+  font-size: 0.75rem;
+  left: 0.75rem;
+  margin: 0;
+  pointer-events: none;
+  position: fixed;
+  z-index: 1;
+}
+
 a {
   color: var(--accent-strong);
   text-decoration-color: rgb(195 140 255 / 55%);

@@ -153,7 +153,7 @@ function compileShader(gl, type, source) {
   return shader;
 }
 
-class PlaygroundRenderer {
+class GhostFibersRenderer {
   constructor(canvas) {
     this.canvas = canvas;
     this.options = { ...defaultOptions };
@@ -182,6 +182,12 @@ class PlaygroundRenderer {
       this.updateAnimation();
     }, { threshold: 0 });
     this.intersectionObserver.observe(canvas);
+    this.handleResize = () => this.resize();
+    this.handleVisibility = () => this.setPageVisibility();
+    this.handleReducedMotion = () => this.updateAnimation();
+    window.addEventListener("resize", this.handleResize);
+    document.addEventListener("visibilitychange", this.handleVisibility);
+    reducedMotion.addEventListener("change", this.handleReducedMotion);
     this.resize();
     this.setOptions(defaultOptions);
   }
@@ -297,59 +303,13 @@ class PlaygroundRenderer {
     cancelAnimationFrame(this.frameId);
     this.resizeObserver.disconnect();
     this.intersectionObserver.disconnect();
+    window.removeEventListener("resize", this.handleResize);
+    document.removeEventListener("visibilitychange", this.handleVisibility);
+    reducedMotion.removeEventListener("change", this.handleReducedMotion);
     this.gl.deleteBuffer(this.buffer);
     this.gl.deleteProgram(this.program);
     this.gl.getExtension("WEBGL_lose_context")?.loseContext();
   }
-}
-
-function renderSiteBackground(canvas) {
-  const context = canvas.getContext("2d");
-  let frameId = 0;
-  let width = 0;
-  let height = 0;
-  const resize = () => {
-    const ratio = Math.min(window.devicePixelRatio || 1, 2);
-    width = window.innerWidth;
-    height = window.innerHeight;
-    canvas.width = Math.floor(width * ratio);
-    canvas.height = Math.floor(height * ratio);
-    context.setTransform(ratio, 0, 0, ratio, 0, 0);
-  };
-  const draw = (time = 0) => {
-    context.clearRect(0, 0, width, height);
-    context.lineWidth = 1;
-    for (let fiber = 0; fiber < 16; fiber += 1) {
-      const offset = fiber * 0.52;
-      const startY = height * (0.08 + fiber * 0.06);
-      const gradient = context.createLinearGradient(0, startY, width, startY);
-      gradient.addColorStop(0, "rgb(194 122 77 / 0)");
-      gradient.addColorStop(0.42, "rgb(194 122 77 / 22%)");
-      gradient.addColorStop(0.65, "rgb(121 144 113 / 18%)");
-      gradient.addColorStop(1, "rgb(121 144 113 / 0)");
-      context.strokeStyle = gradient;
-      context.beginPath();
-      for (let x = -40; x <= width + 40; x += 12) {
-        const y = startY + Math.sin(x * 0.009 + time * 0.00035 + offset) * 22 + Math.sin(x * 0.021 - time * 0.00055 + offset * 2) * 9;
-        x === -40 ? context.moveTo(x, y) : context.lineTo(x, y);
-      }
-      context.stroke();
-    }
-  };
-  const animate = (time) => {
-    draw(time);
-    frameId = requestAnimationFrame(animate);
-  };
-  const update = () => {
-    cancelAnimationFrame(frameId);
-    resize();
-    draw();
-    if (!reducedMotion.matches && !document.hidden) frameId = requestAnimationFrame(animate);
-  };
-  update();
-  window.addEventListener("resize", update);
-  reducedMotion.addEventListener("change", update);
-  document.addEventListener("visibilitychange", update);
 }
 
 function readFormOptions(form) {
@@ -364,20 +324,29 @@ function updateControlValue(input) {
   if (output) output.textContent = input.type === "checkbox" ? String(input.checked) : input.value;
 }
 
-document.querySelectorAll(".ghost-fibers").forEach(renderSiteBackground);
-document.querySelectorAll("[data-ghost-fibers-playground]").forEach((canvas) => {
-  const form = canvas.closest(".ghost-playground").querySelector(".ghost-playground-controls");
+function showWebglError(canvas, message, className) {
+  canvas.hidden = true;
+  const error = document.createElement("p");
+  error.className = className;
+  error.textContent = message;
+  canvas.parentElement.append(error);
+}
+
+function initializeRenderer(canvas, form) {
   let renderer;
   try {
-    renderer = new PlaygroundRenderer(canvas);
+    renderer = new GhostFibersRenderer(canvas);
   } catch {
-    canvas.hidden = true;
-    const message = document.createElement("p");
-    message.className = "playground-render-error";
-    message.textContent = "이 브라우저에서는 WebGL 2를 지원하지 않아 Ghost Fibers 미리보기를 표시할 수 없습니다.";
-    canvas.parentElement.append(message);
+    showWebglError(canvas, form
+      ? "이 브라우저에서는 WebGL 2를 지원하지 않아 Ghost Fibers 미리보기를 표시할 수 없습니다."
+      : "WebGL 2를 지원하지 않아 배경 효과를 표시할 수 없습니다.", form ? "playground-render-error" : "site-render-error");
     return;
   }
+  renderer.updateAnimation();
+  window.addEventListener("pagehide", () => renderer.destroy(), { once: true });
+
+  if (!form) return;
+
   form.querySelectorAll("input, select").forEach((input) => {
     const output = document.createElement("output");
     input.parentElement.append(output);
@@ -396,8 +365,9 @@ document.querySelectorAll("[data-ghost-fibers-playground]").forEach((canvas) => 
     });
     renderer.setOptions(defaultOptions);
   });
-  renderer.updateAnimation();
-  document.addEventListener("visibilitychange", () => renderer.setPageVisibility());
-  reducedMotion.addEventListener("change", () => renderer.updateAnimation());
-  window.addEventListener("pagehide", () => renderer.destroy(), { once: true });
+}
+
+document.querySelectorAll(".ghost-fibers").forEach((canvas) => initializeRenderer(canvas));
+document.querySelectorAll("[data-ghost-fibers-playground]").forEach((canvas) => {
+  initializeRenderer(canvas, canvas.closest(".ghost-playground").querySelector(".ghost-playground-controls"));
 });
