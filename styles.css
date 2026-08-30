@@ -1,14 +1,15 @@
 :root {
-  color-scheme: light dark;
+  color-scheme: dark;
   font-family: ui-serif, Georgia, Cambria, "Times New Roman", serif;
-  --accent: #9b4f2d;
-  --accent-strong: #763617;
-  --ink: #302a25;
-  --muted: #70665c;
-  --line: #e4d9cc;
-  --paper: #fffdf9;
-  --canvas: #f5efe6;
-  --shadow: 0 18px 45px rgb(86 57 36 / 12%);
+  --accent: #4deeff;
+  --accent-strong: #c38cff;
+  --ink: #eef5ff;
+  --muted: #a8b7d4;
+  --line: #29375b;
+  --paper: #10172b;
+  --canvas: #050815;
+  --shadow: 0 18px 45px rgb(0 0 0 / 42%), 0 0 24px rgb(77 238 255 / 10%);
+  --neon-pink: #ff6fcf;
 }
 
 * {
@@ -21,8 +22,8 @@ html {
 
 body {
   background:
-    radial-gradient(circle at 10% 0%, rgb(220 176 128 / 32%), transparent 26rem),
-    radial-gradient(circle at 90% 10%, rgb(194 211 181 / 32%), transparent 23rem),
+    radial-gradient(circle at 10% 0%, rgb(58 44 128 / 35%), transparent 29rem),
+    radial-gradient(circle at 90% 10%, rgb(0 183 255 / 19%), transparent 26rem),
     var(--canvas);
   color: var(--ink);
   isolation: isolate;
@@ -45,18 +46,20 @@ body {
 
 a {
   color: var(--accent-strong);
-  text-decoration-color: rgb(155 79 45 / 45%);
+  text-decoration-color: rgb(195 140 255 / 55%);
   text-underline-offset: 0.18em;
 }
 
 a:hover {
   color: var(--accent);
+  text-shadow: 0 0 12px rgb(77 238 255 / 50%);
   text-decoration-thickness: 0.14em;
 }
 
 a:focus-visible {
   border-radius: 0.2rem;
-  outline: 3px solid #1f6f78;
+  outline: 3px solid var(--accent);
+  box-shadow: 0 0 0 5px rgb(77 238 255 / 20%);
   outline-offset: 3px;
 }
 
@@ -68,13 +71,14 @@ a:focus-visible {
 
 .site-header {
   backdrop-filter: blur(12px);
-  background: rgb(255 253 249 / 86%);
-  border-bottom: 1px solid rgb(228 217 204 / 85%);
+  background: rgb(8 12 29 / 88%);
+  border-bottom: 1px solid rgb(77 238 255 / 24%);
   position: relative;
 }
 
 .site-header::after {
-  background: linear-gradient(90deg, #c27a4d, #e2b36f, #799071);
+  background: linear-gradient(90deg, var(--accent), var(--accent-strong), var(--neon-pink));
+  box-shadow: 0 0 14px rgb(77 238 255 / 70%);
   bottom: -1px;
   content: "";
   height: 3px;
@@ -100,6 +104,7 @@ a:focus-visible {
 
 .site-name::before {
   color: var(--accent);
+  text-shadow: 0 0 10px var(--accent);
   content: "✦";
   font-family: system-ui, sans-serif;
   font-size: 0.8em;
@@ -117,12 +122,14 @@ a:focus-visible {
   padding: 0.38rem 0.78rem;
   text-decoration: none;
   transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms ease;
+  box-shadow: inset 0 0 14px rgb(77 238 255 / 5%);
 }
 
 .profile-link:hover {
-  background: #f4e8dc;
-  border-color: #cf9a79;
-  color: var(--accent-strong);
+  background: rgb(77 238 255 / 11%);
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 0 16px rgb(77 238 255 / 20%);
   text-decoration: none;
   transform: translateY(-1px);
 }
@@ -133,7 +140,8 @@ a:focus-visible {
 }
 
 .intro::after {
-  background: #c27a4d;
+  background: linear-gradient(90deg, var(--accent), var(--neon-pink));
+  box-shadow: 0 0 14px rgb(77 238 255 / 65%);
   border-radius: 99px;
   content: "";
   display: block;
@@ -144,6 +152,7 @@ a:focus-visible {
 
 .eyebrow {
   color: var(--accent);
+  text-shadow: 0 0 12px rgb(77 238 255 / 45%);
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-size: 0.75rem;
   font-weight: 800;
@@ -184,7 +193,7 @@ h1 {
   background: var(--paper);
   border: 1px solid var(--line);
   border-radius: 1rem;
-  box-shadow: 0 3px 0 rgb(140 87 48 / 7%);
+  box-shadow: 0 3px 0 rgb(77 238 255 / 12%);
   padding: clamp(1.5rem, 5vw, 2.25rem);
 }
 
@@ -195,7 +204,8 @@ h1 {
 }
 
 .post-card::before {
-  background: linear-gradient(#c27a4d, #e2b36f);
+  background: linear-gradient(var(--accent), var(--neon-pink));
+  box-shadow: 0 0 10px var(--accent);
   content: "";
   height: 100%;
   left: 0;
@@ -209,7 +219,7 @@ h1 {
 
 .post-card:hover,
 .post-card:focus-within {
-  border-color: #cf9a79;
+  border-color: var(--accent);
   box-shadow: var(--shadow);
   transform: translateY(-3px);
 }
@@ -327,9 +337,10 @@ h1 {
 
 .ghost-playground-stage {
   aspect-ratio: 16 / 7;
-  background: #120f1a;
-  border: 1px solid #433a50;
+  background: #070b1a;
+  border: 1px solid rgb(77 238 255 / 38%);
   border-radius: 1rem;
+  box-shadow: 0 0 30px rgb(77 238 255 / 11%);
   isolation: isolate;
   min-height: 19rem;
   overflow: hidden;
@@ -347,8 +358,8 @@ h1 {
 
 .playground-preview-overlay {
   align-items: flex-start;
-  background: linear-gradient(90deg, rgb(18 15 26 / 78%), transparent 62%);
-  color: #fffdf9;
+  background: linear-gradient(90deg, rgb(5 8 21 / 88%), transparent 70%);
+  color: var(--ink);
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -381,8 +392,8 @@ h1 {
 }
 
 .ghost-playground-controls fieldset {
-  background: rgb(255 253 249 / 91%);
-  border: 1px solid rgb(228 217 204 / 88%);
+  background: rgb(16 23 43 / 94%);
+  border: 1px solid rgb(77 238 255 / 18%);
   border-radius: 0.75rem;
   display: grid;
   gap: 1rem;
@@ -421,6 +432,13 @@ h1 {
   min-width: 0;
 }
 
+.playground-control input:focus,
+.playground-control select:focus {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+  box-shadow: 0 0 12px rgb(77 238 255 / 35%);
+}
+
 .playground-control input[type="color"] {
   background: transparent;
   border: 0;
@@ -436,8 +454,8 @@ h1 {
 }
 
 .playground-control select {
-  background: var(--paper);
-  border: 1px solid var(--line);
+  background: #0b1124;
+  border: 1px solid #3d4e79;
   border-radius: 0.35rem;
   color: var(--ink);
   padding: 0.35rem 0.45rem;
@@ -460,10 +478,10 @@ h1 {
 }
 
 .playground-reset {
-  background: var(--accent-strong);
+  background: linear-gradient(135deg, var(--accent-strong), var(--neon-pink));
   border: 0;
   border-radius: 0.45rem;
-  color: #fff;
+  color: #070b1a;
   cursor: pointer;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-size: 0.9rem;
@@ -474,10 +492,11 @@ h1 {
 
 .playground-reset:hover {
   background: var(--accent);
+  box-shadow: 0 0 18px rgb(77 238 255 / 45%);
 }
 
 .playground-reset:focus-visible {
-  outline: 3px solid #1f6f78;
+  outline: 3px solid var(--accent);
   outline-offset: 3px;
 }
 
@@ -501,44 +520,6 @@ h1 {
   width: 1px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --accent: #e8a675;
-    --accent-strong: #f2bf90;
-    --ink: #f3ece3;
-    --muted: #c6b9ab;
-    --line: #4a4038;
-    --paper: #211c19;
-    --canvas: #171310;
-    --shadow: 0 18px 45px rgb(0 0 0 / 28%);
-  }
-
-  body {
-    background:
-      radial-gradient(circle at 10% 0%, rgb(121 72 39 / 34%), transparent 26rem),
-      radial-gradient(circle at 90% 10%, rgb(71 92 67 / 35%), transparent 23rem),
-      var(--canvas);
-  }
-
-  .site-header {
-    background: rgb(28 23 20 / 86%);
-    border-color: rgb(74 64 56 / 85%);
-  }
-
-  .profile-link:hover {
-    background: #34261e;
-    border-color: #906145;
-  }
-
-  .ghost-playground-controls fieldset {
-    background: rgb(33 28 25 / 91%);
-    border-color: rgb(74 64 56 / 88%);
-  }
-
-  .playground-reset {
-    color: #211c19;
-  }
-}
 
 @media (max-width: 28rem) {
   .container {
